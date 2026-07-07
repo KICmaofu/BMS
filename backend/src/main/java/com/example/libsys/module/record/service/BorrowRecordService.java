@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class BorrowRecordService extends ServiceImpl<BorrowRecordMapper, BorrowRecordEntity> {
 
     private final BookMapper bookMapper;
@@ -42,6 +43,32 @@ public class BorrowRecordService extends ServiceImpl<BorrowRecordMapper, BorrowR
     public PageResult<BorrowRecordVo> getRecordPage(Long pageNum, Long pageSize, Long userId, Long bookId, Integer status, String keyword) {
         Page<BorrowRecordEntity> page = new Page<>(pageNum, pageSize);
 
+        List<Long> finalMatchedBookIds = null;
+        List<Long> finalMatchedUserIds = null;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            List<Long> matchedBookIds = bookMapper.selectList(
+                    new LambdaQueryWrapper<BookEntity>()
+                            .like(BookEntity::getTitle, keyword)
+                            .or().like(BookEntity::getIsbn, keyword)
+            ).stream().map(BookEntity::getId).collect(Collectors.toList());
+
+            List<Long> matchedUserIds = userMapper.selectList(
+                    new LambdaQueryWrapper<UserEntity>()
+                            .like(UserEntity::getUsername, keyword)
+                            .or().like(UserEntity::getNickname, keyword)
+            ).stream().map(UserEntity::getId).collect(Collectors.toList());
+
+            if (matchedBookIds.isEmpty() && matchedUserIds.isEmpty()) {
+                return PageResult.of(List.of(), 0L, pageNum, pageSize);
+            }
+
+            finalMatchedBookIds = matchedBookIds;
+            finalMatchedUserIds = matchedUserIds;
+        }
+
+        final List<Long> bookIdsForLambda = finalMatchedBookIds;
+        final List<Long> userIdsForLambda = finalMatchedUserIds;
+
         LambdaQueryWrapper<BorrowRecordEntity> wrapper = new LambdaQueryWrapper<>();
         if (userId != null) {
             wrapper.eq(BorrowRecordEntity::getUserId, userId);
@@ -51,6 +78,25 @@ public class BorrowRecordService extends ServiceImpl<BorrowRecordMapper, BorrowR
         }
         if (status != null) {
             wrapper.eq(BorrowRecordEntity::getStatus, status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.and(w -> {
+                boolean hasCondition = false;
+                if (bookIdsForLambda != null && !bookIdsForLambda.isEmpty()) {
+                    w.in(BorrowRecordEntity::getBookId, bookIdsForLambda);
+                    hasCondition = true;
+                }
+                if (userIdsForLambda != null && !userIdsForLambda.isEmpty()) {
+                    if (hasCondition) {
+                        w.or().in(BorrowRecordEntity::getUserId, userIdsForLambda);
+                    } else {
+                        w.in(BorrowRecordEntity::getUserId, userIdsForLambda);
+                    }
+                }
+                if (!hasCondition && (userIdsForLambda == null || userIdsForLambda.isEmpty())) {
+                    w.eq(BorrowRecordEntity::getId, -1L);
+                }
+            });
         }
         wrapper.orderByDesc(BorrowRecordEntity::getBorrowDate);
 
@@ -253,7 +299,7 @@ public class BorrowRecordService extends ServiceImpl<BorrowRecordMapper, BorrowR
         }
 
         record.setStatus(3);
-        record.setFineAmount(book.getPrice());
+        record.setFineAmount(book.getPrice() != null ? book.getPrice() : BigDecimal.ZERO);
         updateById(record);
 
         book.setTotalCount(book.getTotalCount() - 1);

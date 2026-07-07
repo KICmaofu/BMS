@@ -30,3 +30,7 @@ export const deleteUser = (id: number): Promise<void> => {
 export const getRoleList = (): Promise<Role[]> => {
   return request.get('/user/roles');
 };
+
+export const getSimpleUserList = (): Promise<User[]> => {
+  return request.get('/user/simple-list');
+};

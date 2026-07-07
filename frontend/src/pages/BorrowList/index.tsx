@@ -30,7 +30,7 @@ import {
   RecordQueryParams,
 } from '@/api/record';
 import { getBookPage } from '@/api/book';
-import { getUserPage } from '@/api/user';
+import { getSimpleUserList } from '@/api/user';
 import { BorrowRecord, Book, User } from '@/types';
 import { useUserStore } from '@/store/userStore';
 import dayjs from 'dayjs';
@@ -80,8 +80,8 @@ const BorrowList = () => {
 
   const fetchUsers = async () => {
     try {
-      const result = await getUserPage({ pageNum: 1, pageSize: 100 });
-      setUsers(result.rows);
+      const result = await getSimpleUserList();
+      setUsers(result);
     } catch (error) {
       console.error('获取用户列表失败', error);
     }

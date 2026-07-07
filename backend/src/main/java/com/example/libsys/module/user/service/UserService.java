@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class UserService extends ServiceImpl<UserMapper, UserEntity> {
 
     private final RoleMapper roleMapper;
@@ -133,5 +134,12 @@ public class UserService extends ServiceImpl<UserMapper, UserEntity> {
 
     public List<RoleEntity> getAllRoles() {
         return roleMapper.selectList(null);
+    }
+
+    public List<UserEntity> getSimpleUserList() {
+        return list(new LambdaQueryWrapper<UserEntity>()
+                .eq(UserEntity::getStatus, 1)
+                .select(UserEntity::getId, UserEntity::getUsername, UserEntity::getNickname)
+                .orderByAsc(UserEntity::getUsername));
     }
 }

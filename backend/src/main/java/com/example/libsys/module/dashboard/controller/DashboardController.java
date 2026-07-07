@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/dashboard")
+@SuppressWarnings("null")
 public class DashboardController {
 
     private final BookMapper bookMapper;

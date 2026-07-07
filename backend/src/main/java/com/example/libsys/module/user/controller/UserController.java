@@ -4,6 +4,7 @@ import com.example.libsys.common.result.R;
 import com.example.libsys.common.result.PageResult;
 import com.example.libsys.module.user.dto.UserDto;
 import com.example.libsys.module.user.entity.RoleEntity;
+import com.example.libsys.module.user.entity.UserEntity;
 import com.example.libsys.module.user.service.UserService;
 import com.example.libsys.module.user.vo.UserVo;
 import jakarta.validation.Valid;
@@ -61,5 +62,10 @@ public class UserController {
     @GetMapping("/roles")
     public R<List<RoleEntity>> getAllRoles() {
         return R.ok(userService.getAllRoles());
+    }
+
+    @GetMapping("/simple-list")
+    public R<List<UserEntity>> getSimpleUserList() {
+        return R.ok(userService.getSimpleUserList());
     }
 }

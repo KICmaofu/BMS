@@ -73,11 +73,10 @@ const UserList = () => {
 
   useEffect(() => {
     fetchData();
-  }, [pageNum, pageSize]);
+  }, [pageNum, pageSize, keyword]);
 
   const handleSearch = () => {
     setPageNum(1);
-    fetchData();
   };
 
   const handleAdd = () => {
@@ -90,6 +89,7 @@ const UserList = () => {
     setEditingRecord(record);
     form.setFieldsValue({
       ...record,
+      status: record.status === 1,
       roleIds: roles
         .filter((r) => record.roles?.includes(r.code))
         .map((r) => r.id),
@@ -110,11 +110,15 @@ const UserList = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      const submitValues = {
+        ...values,
+        status: values.status ? 1 : 0,
+      };
       if (editingRecord) {
-        await updateUser(editingRecord.id, values);
+        await updateUser(editingRecord.id, submitValues);
         message.success('修改成功');
       } else {
-        await addUser(values);
+        await addUser(submitValues);
         message.success('添加成功');
       }
       setModalVisible(false);
@@ -311,13 +315,11 @@ const UserList = () => {
             name="status"
             label="状态"
             valuePropName="checked"
-            initialValue={1}
+            initialValue={true}
           >
             <Switch
               checkedChildren="正常"
               unCheckedChildren="禁用"
-              checked={undefined}
-              onChange={(checked) => form.setFieldValue('status', checked ? 1 : 0)}
             />
           </Form.Item>
         </Form>

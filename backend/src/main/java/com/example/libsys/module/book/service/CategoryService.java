@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class CategoryService extends ServiceImpl<CategoryMapper, CategoryEntity> {
 
     private final BookMapper bookMapper;

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class BookService extends ServiceImpl<BookMapper, BookEntity> {
 
     private final CategoryMapper categoryMapper;
